@@ -1,0 +1,38 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Commerce Invoices plugin for Craft CMS 3.x
+ *
+ * Commerce Invoices index.twig
+ *
+ * @author    Len van Essen
+ * @copyright Copyright (c) 2021 Len van Essen
+ * @link      wndr.digital
+ * @package   CommerceInvoices
+ * @since     1.0.0
+ */
+#}
+{% extends "_layouts/elementindex" %}
+
+{% import "_includes/forms" as forms %}
+{% set elementType = 'lenvanessen\\commerceinvoices\\elements\\Invoice' %}
+
+{% set docsUrl = "https://github.com/lenvanessen/commerce-invoices/blob/master/README.md" %}
+
+{% set title = "Commerce Invoices" %}
+
+{% set pluginCpUrl = url('commerce-invoices') %}
+
+{% set iconUrl = view.getAssetManager().getPublishedUrl('@lenvanessen/commerceinvoices/assetbundles/invoicescpsection/dist', true) ~ '/img/Invoices-icon.svg' %}
+
+{% set extraPageHeaderHtml %}
+    <div class="buttons">
+        <a href="{{ pluginCpUrl }}" class="btn submit add icon">{{ "Click Me!"|t('commerce-invoices') }}</a>
+    </div>
+{% endset %}
+
+{% set content %}
+    <h2>{{ "Invoices CP Section body goes here"|t('commerce-invoices') }}</h2>
+    <img src="{{ iconUrl }}" height="64" width="64" />
+    <p class="textline"></p>
+{% endset %}

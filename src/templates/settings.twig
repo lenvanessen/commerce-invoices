@@ -1,0 +1,42 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Commerce Invoices plugin for Craft CMS 3.x
+ *
+ * Commerce Invoices index.twig
+ *
+ * @author    Len van Essen
+ * @copyright Copyright (c) 2021 Len van Essen
+ * @link      wndr.digital
+ * @package   CommerceInvoices
+ * @since     1.0.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+    label: 'Invoice number format'|t,
+    id: 'invoiceNumberFormat',
+    instructions: "Use twig here. E.g {{object.dateCompleted|date('Y')}}-{{'%05d'|format(object.invoiceId) }} will result in 2021-00001"|t,
+    name: 'invoiceNumberFormat',
+    value: settings['invoiceNumberFormat']})
+}}
+
+{{ forms.lightswitchField({
+    label: 'Enable auto creation?'|t,
+    id: 'automaticallyCreate',
+    name: 'automaticallyCreate',
+    value: 1,
+    on: settings['automaticallyCreate'],
+    instructions: 'Should the invoice be automatically created?'|t
+}) }}
+
+{{ forms.selectField({
+    id: 'auto-generate-order-status-id',
+    label: "Auto create on status"|t,
+    name: 'automaticallyCreateOrderStatusId',
+    options: orderStatuses,
+    value: settings['automaticallyCreateOrderStatusId'],
+    class: 'auto-generate-order-status-id'
+}) }}

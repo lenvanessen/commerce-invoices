@@ -1,0 +1,66 @@
+/**
+ * Commerce Invoices plugin for Craft CMS
+ *
+ * Invoices Field CSS
+ *
+ * @author    Len van Essen
+ * @copyright Copyright (c) 2021 Len van Essen
+ * @link      wndr.digital
+ * @package   CommerceInvoices
+ * @since     1.0.0
+ */
+
+hr {
+    border-top:1px solid #eee;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+
+.text-right {
+    text-align: right !important;
+}
+
+#toolbar {
+    justify-content: flex-end;
+}
+
+.border-left {
+    border-left:1px solid #eee;
+}
+
+.p-1 {
+    padding:.25rem;
+}
+
+.p-2 {
+    padding:.5rem;
+}
+
+.p-3 {
+    padding:.75rem;
+}
+
+.p-5 {
+    padding:1rem;
+}
+
+.pl-1 {
+    padding-left:.25rem;
+}
+
+.pl-2 {
+    padding-left:.5rem;
+}
+
+.pl-3 {
+    padding-left:.75rem;
+}
+
+.pl-4 {
+    padding-left:1rem;
+}
+
+.pl-4 {
+    padding-left:1rem;
+}
