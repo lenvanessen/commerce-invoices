@@ -42,11 +42,11 @@ class InvoiceRows extends Component
         // Parse global order adjusters, taxes, discounts
         foreach ($order->getAdjustmentsByType('tax') as $adjustment) {
             if($adjustment->lineItemId) continue; //  Only non-line-item taxes here
-
+            if($adjustment->amount == 0) continue; // Only actual values
             $row = new InvoiceRow();
             $row->invoiceId = $invoice->id;
             $row->qty = $invoice->isCredit ? -1 : 1;
-            $row->description = $adjustment->description;
+            $row->description = $adjustment->name;
             $row->tax = $adjustment->amount;
             $row->price = $adjustment->included ? -$adjustment->amount : 0;
 
