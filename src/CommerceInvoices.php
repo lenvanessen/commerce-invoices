@@ -163,17 +163,21 @@ class CommerceInvoices extends Plugin
         $parent = parent::getCpNavItem();
         $parent['label'] = Craft::t('commerce-invoices', 'Invoices');
 
-        return array_merge($parent,[
-            'subnav' => [
-                'sectionName' => [
-                    'label' => Craft::t('commerce-invoices', 'Invoices'),
-                    'url'   => 'commerce-invoices'
-                ],
-                'settings' => [
-                    'label' => Craft::t('commerce-invoices', 'Settings'),
-                    'url'   => 'settings/plugins/commerce-invoices'
-                ]
+        $subnav = [
+            'commerceInvoices' => [
+                'label' => Craft::t('commerce-invoices', 'Invoices'),
+                'url'   => 'commerce-invoices'
             ]
+        ];
+
+        if(Craft::$app->getConfig()->general->allowAdminChanges) {
+            $subnav['invoiceSettings'] = [
+                'label' => Craft::t('commerce-invoices', 'Settings'),
+                'url'   => 'settings/plugins/commerce-invoices'
+            ];
+        }
+        return array_merge($parent,[
+            'subnav' => $subnav
         ]);
     }
 
