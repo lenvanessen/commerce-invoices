@@ -1,9 +1,15 @@
 # Commerce Invoices plugin for Craft CMS 3.x
 
-A pdf of an orders does not equal an invoice, invoices should be: Immutable, sequential in order.  Commerce Invoices allows you to create moment-in-time snapshots of a order to create a invoice or credit invoice
+Craft Commerce is great! Their PDF system is pretty awesome to. However, pdf of a does not equal an invoice, invoices should be: Immutable and sequentially numbered.
+
+Commerce Invoices is an extension for Craft Commerce that allows you to:
+- Create PDF invoices for orders (automatically if they reach a certain status, or manually)
+- (Partially) Credit an invoice, create a credit-note 
+- Automatically re-stock your inventory when you (partially) credit a order
+- Keep a solid invoice history, immutable and irreversible so that your accountant will be a happy man (or woman, or any other pronoun)
 
 
-![Screenshot](resources/img/plugin-logo.png)
+![Screenshot](resources/img/screenshot.png)
 
 ## Requirements
 
@@ -23,13 +29,7 @@ To install the plugin, follow these instructions.
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Commerce Invoices.
 
-## Commerce Invoices Overview
-
--Insert text here-
-
 ## Configuring Commerce Invoices
-
--Insert text here-
 
 ### Setting up e-mails & PDFs
 This extension integrates nicely with Craft's built-in system for Commerce E-mails and PDFs.
@@ -51,11 +51,13 @@ By passing a specific invoice id you can test certain invoices, using the query 
 
 The only condition is that your site is not in production mode. You can also find a example PDF in the sourcecode of this extension, under templates.
 
-
 ## Commerce Invoices Roadmap
 
 Some things to do, and ideas for potential features:
 
-* Release it
+* Automatic refund creation
+* Release it 
 
 Brought to you by [Len van Essen](wndr.digital)
+<div>Icons made by <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+
