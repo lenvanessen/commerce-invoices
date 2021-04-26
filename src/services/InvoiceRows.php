@@ -14,6 +14,7 @@ use Craft;
 use craft\base\Component;
 use craft\commerce\base\ShippingMethodInterface;
 use craft\commerce\elements\Order;
+use craft\commerce\models\LineItem;
 use craft\commerce\models\OrderAdjustment;
 use lenvanessen\commerce\invoices\elements\Invoice;
 use lenvanessen\commerce\invoices\helpers\TaxExtractor;
@@ -32,49 +33,13 @@ class InvoiceRows extends Component
         InvoiceRow::deleteAll("invoiceId = {$invoice->id}");
 
         foreach($order->lineItems as $lineItem) {
-            $row = new InvoiceRow();
-            $row->lineItemId = $lineItem->id;
-            $row->invoiceId = $invoice->id;
-            $row->qty = $invoice->isCredit
-                ? 0 - $lineItem->qty
-                : $lineItem->qty;
-            $row->description = $lineItem->description;
-
-            $tax = new TaxExtractor($lineItem);
-
-            $row->price = $tax->getUnitNet(); // plus discount(), but array filter discount on price value first
-            $row->tax = $tax->getTaxUnit();
-
-            $row->taxCategoryId = $lineItem->taxCategoryId;
-
-            $row->save();
+            $this->createFromLineItem($lineItem, $invoice);
         }
 
-        if(($shipping = $order->getTotalShippingCost()) > 0) {
-            $row = new InvoiceRow();
-            $row->invoiceId = $invoice->id;
-            $row->qty = $invoice->isCredit ? -1 : 1;
-            $row->description = Craft::t(
-                'commerce-invoices',
-                sprintf('Shipping costs %d', $order->id)
-            );
+        // Process shipping
+        $this->createFromShipping($order, $invoice);
 
-            $row->tax = 0;
-            $row->price = $shipping;
-//            foreach($order->getAdjustmentsByType('tax') as $adjuster) {
-//                if($source = $adjuster->getSourceSnapshot() && isset($source['taxable']) && $source['taxable'] === 'order_total_shipping') {
-//                    $row->tax = $adjuster->amount;
-//                    $row->price = $adjuster->included
-//                        ? $shipping - $adjuster->amount
-//                        : $row->price;
-//                    break;
-//                }
-//            }
-
-            $row->save();
-        }
-
-        // Parse global order adjusters
+        // Parse global order adjusters, taxes, discounts
         foreach ($order->getAdjustmentsByType('tax') as $adjustment) {
             if($adjustment->lineItemId) continue; //  Only non-line-item taxes here
 
@@ -89,6 +54,66 @@ class InvoiceRows extends Component
         }
 
         return true;
+    }
+
+    /**
+     * @param Order $order
+     * @param Invoice $invoice
+     * @return false
+     */
+    public function createFromShipping(Order $order, Invoice $invoice)
+    {
+        if(($shipping = $order->getTotalShippingCost()) == 0) {
+            return false;
+        }
+
+        $row = new InvoiceRow();
+        $row->invoiceId = $invoice->id;
+        $row->qty = $invoice->isCredit ? -1 : 1;
+        $row->description = Craft::t(
+            'commerce-invoices',
+            sprintf('Shipping costs %d', $order->id)
+        );
+
+        $row->tax = 0;
+        $row->price = $shipping;
+
+        foreach($order->getAdjustmentsByType('tax') as $adjuster) {
+            if($source = $adjuster->getSourceSnapshot() && isset($source['taxable']) && $source['taxable'] === 'order_total_shipping') {
+                $row->tax = $adjuster->amount;
+                $row->price = $adjuster->included
+                    ? $shipping - $adjuster->amount
+                    : $row->price;
+                break;
+            }
+        }
+
+        return $row->save();
+    }
+
+    /**
+     * @param LineItem $lineItem
+     * @param Invoice $invoice
+     * @return InvoiceRow
+     */
+    public function createFromLineItem(LineItem $lineItem, Invoice $invoice)
+    {
+        $row = new InvoiceRow();
+        $row->lineItemId = $lineItem->id;
+        $row->invoiceId = $invoice->id;
+        $row->qty = $invoice->isCredit
+            ? 0 - $lineItem->qty
+            : $lineItem->qty;
+        $row->description = $lineItem->description;
+
+        $tax = new TaxExtractor($lineItem);
+
+        $row->price = $tax->getUnitNet(); // plus discount(), but array filter discount on price value first
+        $row->tax = $tax->getTaxUnit();
+
+        $row->taxCategoryId = $lineItem->taxCategoryId;
+
+        return $row->save();
     }
 
     /**
