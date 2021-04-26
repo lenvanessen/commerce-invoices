@@ -8,13 +8,14 @@
  * @copyright Copyright (c) 2021 Len van Essen
  */
 
-namespace lenvanessen\commerceinvoices\services;
+namespace lenvanessen\commerce\invoices\services;
 
 use Craft;
 use craft\base\Component;
 use craft\commerce\elements\Order;
-use lenvanessen\commerceinvoices\CommerceInvoices;
-use lenvanessen\commerceinvoices\elements\Invoice;
+use lenvanessen\commerce\invoices\CommerceInvoices;
+use lenvanessen\commerce\invoices\elements\Invoice;
+use putyourlightson\logtofile\LogToFile;
 
 /**
  * @author    Len van Essen
@@ -26,26 +27,15 @@ class Invoices extends Component
     public function createFromOrder(Order $order, $type = 'invoice'): bool
     {
         $sessionService = Craft::$app->getSession();
-        $sessionService->setNotice(Craft::t('commerce-invoices', sprintf('Invoice created successfully for order: #%d', $order->id)));
 
         if(! $order->isCompleted) {
-            $sessionService->setError(
-                Craft::t(
-                    'commerce-invoices',
-                    sprintf("Order %d was skipped, because it has not yet been completed", $order->id)
-                )
-            );
+            LogToFile::log(sprintf("Order %d was skipped, because it has not yet been completed", $order->id), 'commerce-invoices', 'error');
 
             return false;
         }
 
         if(Invoice::find()->orderId($order->id)->type($type)->exists()) {
-            $sessionService->setError(
-                Craft::t(
-                    'commerce-invoices',
-                    sprintf("Order %d was skipped, because an invoice already exists", $order->id)
-                )
-            );
+            LogToFile::log(sprintf("Order %d was skipped, because an invoice already exists", $order->id), 'commerce-invoices', 'error');
 
             return false;
         }
@@ -61,20 +51,14 @@ class Invoices extends Component
         $invoice->type = $type;
 
         if(! Craft::$app->getElements()->saveElement($invoice)) {
-            // TODO doesn't support multiple errors
+
             foreach($invoice->getErrors() as $error) {
-                $sessionService->setError(
-                    sprintf("Could not save order %d because: %s", $order->id, $error)
-                );
+                LogToFile::log(sprintf("Could not save order %d because: %s", $order->id, $error), 'commerce-invoices', 'error');
             }
 
             return false;
         }
 
-        CommerceInvoices::getInstance()->invoiceRows->createFromOrder($order, $invoice);
-
-        $sessionService->setNotice(Craft::t('commerce-invoices', sprintf('Invoice created successfully for order: #%d', $order->id)));
-
-        return true;
+        return CommerceInvoices::getInstance()->invoiceRows->createFromOrder($order, $invoice);
     }
 }

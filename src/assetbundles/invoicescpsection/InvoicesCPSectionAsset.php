@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021 Len van Essen
  */
 
-namespace lenvanessen\commerceinvoices\assetbundles\invoicescpsection;
+namespace lenvanessen\commerce\invoices\assetbundles\invoicescpsection;
 
 use Craft;
 use craft\web\AssetBundle;
@@ -26,7 +26,7 @@ class InvoicesCPSectionAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = "@lenvanessen/commerceinvoices/assetbundles/invoicescpsection/dist";
+        $this->sourcePath = "@lenvanessen/commerce/invoices/assetbundles/invoicescpsection/dist";
 
         $this->depends = [
             CpAsset::class,

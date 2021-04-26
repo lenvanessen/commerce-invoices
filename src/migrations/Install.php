@@ -8,13 +8,13 @@
  * @copyright Copyright (c) 2021 Len van Essen
  */
 
-namespace lenvanessen\commerceinvoices\migrations;
+namespace lenvanessen\commerce\invoices\migrations;
 
 use craft\commerce\db\Table as CommerceTable;
 
 use Craft;
 use craft\db\Migration;
-use lenvanessen\commerceinvoices\db\Table;
+use lenvanessen\commerce\invoices\db\Table;
 
 /**
  * @author    Len van Essen
@@ -95,7 +95,7 @@ class Install extends Migration
                     'lineItemId' => $this->integer(),
                     'qty' => $this->decimal(2),
                     'description' => $this->string(),
-                    'price' => $this->decimal(14, 4)->notNull()->unsigned(),
+                    'price' => $this->decimal(14, 4)->notNull(),
                     'tax' => $this->decimal(14, 4)->notNull()->unsigned(),
                     'taxCategoryId' => $this->integer(),
                     'dateCreated' => $this->dateTime()->notNull(),

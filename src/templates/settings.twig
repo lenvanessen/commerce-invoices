@@ -23,20 +23,53 @@
     value: settings['invoiceNumberFormat']})
 }}
 
-{{ forms.lightswitchField({
-    label: 'Enable auto creation?'|t,
-    id: 'automaticallyCreate',
-    name: 'automaticallyCreate',
-    value: 1,
-    on: settings['automaticallyCreate'],
-    instructions: 'Should the invoice be automatically created?'|t
-}) }}
-
 {{ forms.selectField({
     id: 'auto-generate-order-status-id',
     label: "Auto create on status"|t,
     name: 'automaticallyCreateOrderStatusId',
-    options: orderStatuses,
+    instructions: 'Should the invoice be automatically created when an order reaches a specific orderstatus?',
+    options: [{'option':0, 'label': 'Do not create automatically'|t('commerce-invoices')}]|merge(orderStatuses),
     value: settings['automaticallyCreateOrderStatusId'],
     class: 'auto-generate-order-status-id'
 }) }}
+
+<h1>{{ 'Emails'|t('commerce-invoices') }}</h1>
+<p><strong>{{ 'Important'|t('commerce-invoices') }}:</strong>
+<br>{{ "Don't create a native 'PDF' in Craft for the invoice/credit pdf. You can select a template in the settings of this plugin, and based on the emails you select below the system will attach the emails automatically."|t('commerce-invoices') }}</p>
+{% if not emails|length %}
+    {{ forms.field({
+        label: 'Status Emails'|t('commerce'),
+        instructions: '<span class="error">'~'You currently have no emails configured to select for this status.'|t('commerce')~'</span>',
+        disabled: true
+    }) }}
+{% else %}
+    {% set emails = ['Do not send email'|t('commerce-invoices')]|merge(emails) %}
+
+    {{ forms.selectField({
+        label: 'Invoice Email'|t('commerce-invoices'),
+        instructions: 'Select the Commerce e-mail that should be sent upon creating a new invoice'|t('commerce'),
+        options: emails,
+        name: 'invoiceEmailId',
+        value: settings['invoiceEmailId']
+    }) }}
+
+    {{ forms.selectField({
+        label: 'Credit Email'|t('commerce-invoices'),
+        instructions: 'Select the Commerce e-mail that should be sent upon creating a new credit-invoice'|t('commerce'),
+        options: emails,
+        name: 'creditEmailId',
+        value: settings['creditEmailId']
+    }) }}
+
+    <hr>
+
+    <h2>{{ 'Template'|t('commerce-invoices') }}</h2>
+    {{ forms.autoSuggestField({
+        label: 'PDF Template Path'|t('commerce-invoices'),
+        id: 'pdfPath',
+        name: 'pdfPath',
+        value: settings['pdfPath'],
+        errors: settings.getErrors('pdfPath'),
+        suggestions: craft.cp.getTemplateSuggestions()
+    }) }}
+{% endif %}

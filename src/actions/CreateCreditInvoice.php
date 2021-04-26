@@ -1,11 +1,11 @@
 <?php
 
-namespace lenvanessen\commerceinvoices\actions;
+namespace lenvanessen\commerce\invoices\actions;
 
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
-use lenvanessen\commerceinvoices\CommerceInvoices;
+use lenvanessen\commerce\invoices\CommerceInvoices;
 
 /**
  * @author    Len van Essen
@@ -28,8 +28,11 @@ class CreateCreditInvoice extends ElementAction
             return false;
         }
 
+        $sessionService = Craft::$app->getSession();
         foreach ($query->all() as $order) {
-            CommerceInvoices::getInstance()->invoices->createFromOrder($order, 'credit');
+            CommerceInvoices::getInstance()->invoices->createFromOrder($order, 'credit')
+                ? $sessionService->setNotice(Craft::t('commerce-invoices', sprintf('Invoice created successfully for order: #%d', $order->id)))
+                : $sessionService->setError(     sprintf("Invoice for order %d was not created successfully, check logs", $order->id));
         }
 
         return true;

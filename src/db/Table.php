@@ -1,6 +1,6 @@
 <?php
 
-namespace lenvanessen\commerceinvoices\db;
+namespace lenvanessen\commerce\invoices\db;
 
 abstract class Table {
     const INVOICES = '{{%commerceinvoices_invoice}}';

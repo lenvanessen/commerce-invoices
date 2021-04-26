@@ -15,7 +15,7 @@
 {% extends "_layouts/elementindex" %}
 
 {% import "_includes/forms" as forms %}
-{% set elementType = 'lenvanessen\\commerceinvoices\\elements\\Invoice' %}
+{% set elementType = 'lenvanessen\\commerce\\invoices\\elements\\Invoice' %}
 
 {% set docsUrl = "https://github.com/lenvanessen/commerce-invoices/blob/master/README.md" %}
 
@@ -23,7 +23,7 @@
 
 {% set pluginCpUrl = url('commerce-invoices') %}
 
-{% set iconUrl = view.getAssetManager().getPublishedUrl('@lenvanessen/commerceinvoices/assetbundles/invoicescpsection/dist', true) ~ '/img/Invoices-icon.svg' %}
+{% set iconUrl = view.getAssetManager().getPublishedUrl('@lenvanessen/commerce/invoices/assetbundles/invoicescpsection/dist', true) ~ '/img/Invoices-icon.svg' %}
 
 {% set extraPageHeaderHtml %}
     <div class="buttons">

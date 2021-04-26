@@ -32,7 +32,7 @@ modules:
       migrations: []
       plugins:
         commerce-invoices:
-          class: '\lenvanessen\commerceinvoices\CommerceInvoices'
+          class: '\lenvanessen\commerce\invoices\CommerceInvoices'
           handle: commerce-invoices
       cleanup: true
       transaction: true

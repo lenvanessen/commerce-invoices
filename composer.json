@@ -1,6 +1,6 @@
 {
     "name": "lenvanessen/commerce-invoices",
-    "description": "A pdf of an orders does not equal an invoice, invoices should be: Immutable, sequential in order.  Commerce Invoices allows you to create moment-in-time snapshots of a order to create a invoice or credit invoice",
+    "description": "A pdf of an orders does not equal an invoice, invoices should be: Immutable, sequentialy numbered. Commerce Invoices allows you to create moment-in-time snapshots of a order to create a invoice or credit invoice",
     "type": "craft-plugin",
     "version": "1.0.0",
     "keywords": [
@@ -27,11 +27,12 @@
     "require-dev": {
       "craftcms/cms": "^3.2.0",
       "codeception/codeception": "^3.0",
-      "vlucas/phpdotenv": "^3.0"
+      "vlucas/phpdotenv": "^3.0",
+      "putyourlightson/craft-log-to-file": "^1.0.0"
     },
     "autoload": {
         "psr-4": {
-          "lenvanessen\\commerceinvoices\\": "src/"
+          "lenvanessen\\commerce\\invoices\\": "src/"
         }
     },
     "extra": {
@@ -41,6 +42,6 @@
         "developerUrl": "wndr.digital",
         "documentationUrl": "https://github.com/lenvanessen/commerce-invoices/blob/master/README.md",
         "changelogUrl": "https://raw.githubusercontent.com/lenvanessen/commerce-invoices/master/CHANGELOG.md",
-        "class": "lenvanessen\\commerceinvoices\\CommerceInvoices"
+        "class": "lenvanessen\\commerce\\invoices\\CommerceInvoices"
     }
 }

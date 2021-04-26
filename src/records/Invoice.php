@@ -8,9 +8,9 @@
  * @copyright Copyright (c) 2021 Len van Essen
  */
 
-namespace lenvanessen\commerceinvoices\records;
+namespace lenvanessen\commerce\invoices\records;
 
-use lenvanessen\commerceinvoices\CommerceInvoices;
+use lenvanessen\commerce\invoices\CommerceInvoices;
 
 use Craft;
 use craft\db\ActiveRecord;

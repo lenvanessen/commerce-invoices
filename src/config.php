@@ -24,6 +24,11 @@
 return [
 //    "invoiceNumberFormat" => "{{object.dateCompleted|date('Y')}}-{{'%05d'|format(object.invoiceId) }}",
 //
-//    "automaticallyCreate" => true,
 //    "automaticallyCreateOrderStatusId" => null,
+
+//    "invoiceEmailId" => 0, // 0 = Don't send email
+
+//    "creditEmailId" => 0, // 0 = Don't send email
+
+//    "pdfPath" => ''
 ];

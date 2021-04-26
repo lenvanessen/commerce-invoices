@@ -8,25 +8,34 @@
  * @copyright Copyright (c) 2021 Len van Essen
  */
 
-namespace lenvanessen\commerceinvoices;
+namespace lenvanessen\commerce\invoices;
 
 
 use Craft;
 use craft\base\Element;
 use craft\base\Plugin;
 use craft\commerce\elements\Order;
+use craft\commerce\events\EmailEvent;
+use craft\commerce\events\MailEvent;
+use craft\commerce\events\OrderStatusEvent;
+use craft\commerce\models\Pdf;
+use craft\commerce\services\Emails;
+use craft\commerce\services\OrderHistories;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
 use craft\commerce\Plugin as Commerce;
 
+use craft\helpers\Assets;
 use craft\web\UrlManager;
-use lenvanessen\commerceinvoices\actions\CreateCreditInvoice;
-use lenvanessen\commerceinvoices\actions\CreateInvoice;
-use lenvanessen\commerceinvoices\elements\Invoice;
-use lenvanessen\commerceinvoices\models\Settings;
-use lenvanessen\commerceinvoices\services\InvoiceRows;
-use lenvanessen\commerceinvoices\services\Invoices;
+use lenvanessen\commerce\invoices\actions\CreateCreditInvoice;
+use lenvanessen\commerce\invoices\actions\CreateInvoice;
+use lenvanessen\commerce\invoices\elements\Invoice;
+use lenvanessen\commerce\invoices\models\Settings;
+use lenvanessen\commerce\invoices\services\InvoiceRows;
+use lenvanessen\commerce\invoices\services\Invoices;
+use modules\sitemodule\jobs\ExactOrderExport;
+use yii\base\BaseObject;
 use yii\base\Event;
 
 /**
@@ -70,6 +79,21 @@ class CommerceInvoices extends Plugin
         $this->_registerOrderActions();
         $this->_registerComponents();
         $this->_registerRoutes();
+        $this->_creatInvoiceOnOrderStatusChange();
+        $this->_attachPdfsToEmails();
+    }
+
+    private function _attachPdfsToEmails()
+    {
+        Event::on(
+            Emails::class,
+            Emails::EVENT_BEFORE_SEND_MAIL,
+            function(MailEvent $event) {
+                if(isset($event->orderData['invoiceId'])) {
+                    $this->emails->attachInvoiceToMail($event);
+                }
+            }
+        );
     }
 
     private function _registerComponents(): void
@@ -80,13 +104,27 @@ class CommerceInvoices extends Plugin
             ],
             'invoiceRows' => [
                 'class' => InvoiceRows::class
+            ],
+            'emails' => [
+                'class' => Emails::class
             ]
         ]);
     }
 
     private function _creatInvoiceOnOrderStatusChange()
     {
-        // Todo implement
+        Event::on(
+            OrderHistories::class,
+            OrderHistories::EVENT_ORDER_STATUS_CHANGE,
+            function (OrderStatusEvent $event) {
+                // @var Order $order
+                $order = $event->order;
+
+                if($order->orderStatusId === (int)$this->getSettings()->automaticallyCreateOrderStatusId) {
+                    $this->invoices->createFromOrder($order);
+                }
+            }
+        );
     }
 
     /**
@@ -108,6 +146,11 @@ class CommerceInvoices extends Plugin
                 'settings' => $this->getSettings(),
                 'orderStatuses' => ArrayHelper::map(
                     Commerce::getInstance()->orderStatuses->getAllOrderStatuses(),
+                    'id',
+                    'name'
+                ),
+                'emails' => ArrayHelper::map(
+                    Commerce::getInstance()->emails->getAllEmails(),
                     'id',
                     'name'
                 )
@@ -152,6 +195,17 @@ class CommerceInvoices extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['commerce-invoices/<invoiceId:\d+>'] = 'commerce-invoices/invoice/edit';
+                $event->rules['commerce-invoices/download/<invoiceId:{uid}>'] = 'commerce-invoices/invoice/download';
+            }
+        );
+
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                if (getenv('ENVIRONMENT') !== 'production') {
+                    $event->rules['commerce-invoices/style-pdf'] = 'commerce-invoices/invoice/test';
+                }
             }
         );
     }

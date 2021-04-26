@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021 Len van Essen
  */
 
-namespace lenvanessen\commerceinvoices\models;
+namespace lenvanessen\commerce\invoices\models;
 
 use test\test\Test;
 
@@ -38,17 +38,26 @@ class Settings extends Model
     public $invoiceNumberFormat = "{{object.dateCompleted|date('Y')}}-{{'%05d'|format(object.invoiceId) }}";
 
     /**
-     * If the invoice should be automatically created
-     * @var
-     */
-    public $automaticallyCreate = false;
-
-    /**
      * Automatically generate an invoice when the order hits a certain status
      *
      * @var string
      */
-    public $automaticallyCreateOrderStatusId;
+    public $automaticallyCreateOrderStatusId = 0;
+
+    /**
+     * @var int
+     */
+    public $invoiceEmailId = 0;
+
+    /**
+     * @var int
+     */
+    public $creditEmailId = 0;
+
+    /**
+     * @var string
+     */
+    public $pdfPath;
 
     /**
      * Returns the validation rules for attributes.
@@ -63,9 +72,10 @@ class Settings extends Model
     public function rules()
     {
         return [
-            ['automaticallyCreate', 'boolean'],
             ['automaticallyCreateOrderStatusId', 'integer'],
             ['invoiceNumberFormat', 'string'],
+            ['invoiceEmailId', 'integer'],
+            ['creditEmailId', 'integer'],
         ];
     }
 }

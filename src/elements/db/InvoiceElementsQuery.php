@@ -7,7 +7,7 @@
  * @link      wndr.digital
  * @copyright Copyright (c) 2021 Len van Essen
  */
-namespace lenvanessen\commerceinvoices\elements\db;
+namespace lenvanessen\commerce\invoices\elements\db;
 
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;

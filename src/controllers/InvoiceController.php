@@ -7,14 +7,15 @@
  * @link      wndr.digital
  * @copyright Copyright (c) 2021 Len van Essen
  */
-namespace lenvanessen\commerceinvoices\controllers;
+namespace lenvanessen\commerce\invoices\controllers;
 
 use Craft;
 use craft\web\Controller;
-use lenvanessen\commerceinvoices\assetbundles\invoicescpsection\InvoicesCPSectionAsset;
-use lenvanessen\commerceinvoices\CommerceInvoices;
-use lenvanessen\commerceinvoices\elements\Invoice;
-use lenvanessen\commerceinvoices\records\InvoiceRow;
+use lenvanessen\commerce\invoices\assetbundles\invoicescpsection\InvoicesCPSectionAsset;
+use lenvanessen\commerce\invoices\CommerceInvoices;
+use lenvanessen\commerce\invoices\elements\Invoice;
+use lenvanessen\commerce\invoices\records\InvoiceRow;
+use craft\commerce\Plugin as Commerce;
 use yii\web\UnauthorizedHttpException;
 
 /**
@@ -24,8 +25,24 @@ use yii\web\UnauthorizedHttpException;
  */
 class InvoiceController extends Controller
 {
+    /**
+     * @param $invoiceId
+     * @return \yii\web\Response
+     * @throws UnauthorizedHttpException
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\db\StaleObjectException
+     * @throws \yii\web\BadRequestHttpException
+     */
     public function actionEdit($invoiceId)
     {
+        if(! Craft::$app->getUser()->getIdentity()->can('accessCp')) {
+            throw new UnauthorizedHttpException('Not allowed');
+        }
+
         $request = Craft::$app->getRequest();
         $invoice = Invoice::findOne($invoiceId);
 
@@ -60,14 +77,72 @@ class InvoiceController extends Controller
             $row->save();
         }
 
-        $invoice->sent = $request->getBodyParam('send');
+        $invoice->sent = (bool)$request->getBodyParam('send');
         $invoice->restock = (bool)$request->getBodyParam('restock');
         Craft::$app->getElements()->saveElement($invoice);
 
         // TODO restock
 
+        // If we have a e-mail for this specific order, send it
+        $mailSettingName = "{$invoice->type}EmailId";
+        $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
+        if($mailId !== 0 && $invoice->sent === true) {
+            $emailService = Commerce::getInstance()->getEmails();
+            $mail = $emailService->getEmailById((int)$mailId);
+
+            if($mail) {
+                $emailService->sendEmail($mail, $invoice->order(), null, ['invoiceId' => $invoice->id]);
+            }
+        }
+
         Craft::$app->getSession()->setNotice(sprintf("Updated invoice %s", $invoice->invoiceNumber));
 
         return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * @param $invoiceId
+     * @return false
+     * @throws UnauthorizedHttpException
+     * @throws \yii\base\Exception
+     */
+    public function actionDownload($invoiceId)
+    {
+        if(! Craft::$app->getUser()->getIdentity()->can('accessCp')) {
+            throw new UnauthorizedHttpException('Not allowed');
+        }
+
+        $invoice = Invoice::find()->uid($invoiceId)->one();
+
+        $renderedPdf = Commerce::getInstance()->getPdfs()->renderPdfForOrder(
+            $invoice->order(),
+            '',
+            CommerceInvoices::getInstance()->getSettings()->pdfPath,
+            [
+                'invoice' => $invoice
+            ]
+        );
+
+        return Craft::$app->getResponse()->sendContentAsFile($renderedPdf, $invoice->invoiceNumber . '.pdf', [
+            'mimeType' => 'application/pdf'
+        ]);
+    }
+
+    /**
+     * @return \yii\web\Response
+     * @throws UnauthorizedHttpException
+     */
+    public function actionTest()
+    {
+        if(! Craft::$app->getUser()->getIdentity()->can('accessCp')) {
+            throw new UnauthorizedHttpException('Not allowed');
+        }
+
+        $invoiceId = Craft::$app->getRequest()->get('invoiceId');
+
+        return $this->renderTemplate(
+            CommerceInvoices::getInstance()->getSettings()->pdfPath,
+            ['invoice' => Invoice::findOne($invoiceId)]
+        );
     }
 }

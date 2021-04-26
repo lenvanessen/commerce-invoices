@@ -7,7 +7,7 @@
  * @link      wndr.digital
  * @copyright Copyright (c) 2021 Len van Essen
  */
-namespace lenvanessen\commerceinvoices\elements;
+namespace lenvanessen\commerce\invoices\elements;
 
 use Craft;
 use craft\base\Element;
@@ -19,9 +19,10 @@ use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
 use craft\commerce\elements\Order;
 
-use lenvanessen\commerceinvoices\CommerceInvoices;
-use lenvanessen\commerceinvoices\records\Invoice as InvoiceRecord;
-use lenvanessen\commerceinvoices\elements\db\InvoiceElementsQuery;
+use craft\helpers\UrlHelper;
+use lenvanessen\commerce\invoices\CommerceInvoices;
+use lenvanessen\commerce\invoices\records\Invoice as InvoiceRecord;
+use lenvanessen\commerce\invoices\elements\db\InvoiceElementsQuery;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -173,6 +174,11 @@ class Invoice extends Element
         return Json::decodeIfJson($this->shippingAddressSnapshot);
     }
 
+    public function getPdfUrl()
+    {
+        return UrlHelper::cpUrl('commerce-invoices/download/'.$this->uid);
+    }
+
     /**
      * @return LineItem[]
      */
@@ -211,31 +217,29 @@ class Invoice extends Element
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function subTotal(): int
+    public function subTotal() : float
     {
-        return array_reduce(
-            $this->_rows,
-            fn($amount, $current) => $amount += $current->subTotal()
-        );
+        return $this->_rows
+            ? array_reduce($this->_rows, fn($amount, $current) => $amount += $current->subTotal())
+            : 0;
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function totalTax(): int
+    public function totalTax() : float
     {
-        return array_reduce(
-            $this->_rows,
-            fn($amount, $current) => $amount += $current->subTotalTax()
-        );
+        return $this->_rows
+            ? array_reduce($this->_rows, fn($amount, $current) => $amount += $current->subTotalTax())
+            : 0;
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function total(): int
+    public function total(): float
     {
         return $this->totalTax() + $this->subTotal();
     }
