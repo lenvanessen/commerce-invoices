@@ -441,6 +441,7 @@ class Invoice extends Element
         $record->type = $this->type;
         $record->sent = $this->sent;
         $record->restock = $this->restock;
+        $record->externalId = $this->externalId;
 
         $record->save(false);
 

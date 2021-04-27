@@ -81,8 +81,6 @@ class InvoiceController extends Controller
         $invoice->restock = (bool)$request->getBodyParam('restock');
         Craft::$app->getElements()->saveElement($invoice);
 
-        // TODO restock
-
         // If we have a e-mail for this specific order, send it
         $mailSettingName = "{$invoice->type}EmailId";
         $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
