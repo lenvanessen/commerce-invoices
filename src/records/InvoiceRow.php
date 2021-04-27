@@ -11,9 +11,6 @@
 namespace lenvanessen\commerce\invoices\records;
 
 use craft\commerce\records\LineItem;
-use lenvanessen\commerce\invoices\CommerceInvoices;
-
-use Craft;
 use craft\db\ActiveRecord;
 
 /**

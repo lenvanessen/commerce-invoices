@@ -26,8 +26,6 @@ class Invoices extends Component
 {
     public function createFromOrder(Order $order, $type = 'invoice'): bool
     {
-        $sessionService = Craft::$app->getSession();
-
         if(! $order->isCompleted) {
             LogToFile::log(sprintf("Order %d was skipped, because it has not yet been completed", $order->id), 'commerce-invoices', 'error');
 
@@ -49,6 +47,7 @@ class Invoices extends Component
         $invoice->shippingAddressSnapshot = $order->shippingAddress->toArray();
         $invoice->email = $order->email;
         $invoice->type = $type;
+        $invoice->sent = !$invoice->getIsCredit(); // Send invoices by default
 
         if(! Craft::$app->getElements()->saveElement($invoice)) {
 
