@@ -96,6 +96,11 @@ class Invoice extends Element
     public $restock;
 
     /**
+     * @var string
+     */
+    public $externalId;
+
+    /**
      * @var array
      */
     private $_rows;

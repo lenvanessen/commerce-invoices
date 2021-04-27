@@ -10,7 +10,7 @@
 
 namespace lenvanessen\commerce\invoices\records;
 
-use Craft;
+use craft\commerce\records\LineItem;
 use craft\db\ActiveRecord;
 
 /**
@@ -36,5 +36,14 @@ class InvoiceRow extends ActiveRecord
     public function subTotalTax()
     {
         return $this->qty * $this->tax;
+    }
+
+    public function getLineItem()
+    {
+        if(! $this->lineItemId) {
+            return false;
+        }
+
+        return LineItem::findOne($this->lineItemId);
     }
 }

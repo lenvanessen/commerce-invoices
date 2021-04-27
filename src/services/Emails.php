@@ -19,7 +19,6 @@ use putyourlightson\logtofile\LogToFile;
 
 class Emails
 {
-
     /**
      * Attaches a invoice to it's designated email
      *
