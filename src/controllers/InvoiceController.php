@@ -10,10 +10,13 @@
 namespace lenvanessen\commerce\invoices\controllers;
 
 use Craft;
+use craft\commerce\elements\Variant;
+use craft\commerce\models\LineItem;
 use craft\web\Controller;
 use lenvanessen\commerce\invoices\assetbundles\invoicescpsection\InvoicesCPSectionAsset;
 use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
+use lenvanessen\commerce\invoices\helpers\Stock;
 use lenvanessen\commerce\invoices\records\InvoiceRow;
 use craft\commerce\Plugin as Commerce;
 use yii\web\UnauthorizedHttpException;
@@ -55,9 +58,9 @@ class InvoiceController extends Controller
             ]);
         }
 
-        if($invoice->getEditable() === false) {
-            throw new UnauthorizedHttpException('Trying to edit a non-editable invoice');
-        }
+//        if($invoice->getEditable() === false) {
+//            throw new UnauthorizedHttpException('Trying to edit a non-editable invoice');
+//        }
 
         if($request->getBodyParam('reset')) {
             CommerceInvoices::getInstance()->invoiceRows->createFromOrder($invoice->order(), $invoice);
@@ -81,7 +84,17 @@ class InvoiceController extends Controller
         $invoice->restock = (bool)$request->getBodyParam('restock');
         Craft::$app->getElements()->saveElement($invoice);
 
-        // TODO restock
+
+        if($invoice->sent && $invoice->restock) {
+            foreach($invoice->rows as $row) {
+                $lineItem = $row->lineItem;
+                if(!$lineItem || !Stock::isRestockableLineItem($lineItem)) continue;
+                $purchasable = Variant::findOne($lineItem->purchasableId);
+                $purchasable->stock = $purchasable->stock += abs($row->qty);
+
+                Craft::$app->getElements()->saveElement($purchasable);
+            }
+        }
 
         // If we have a e-mail for this specific order, send it
         $mailSettingName = "{$invoice->type}EmailId";

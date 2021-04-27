@@ -23,6 +23,7 @@ class InvoiceElementsQuery extends ElementQuery
     public $invoiceNumber;
     public $dateCreated;
     public $type;
+    public $externalId;
 
     public function orderId($value)
     {
@@ -52,6 +53,13 @@ class InvoiceElementsQuery extends ElementQuery
         return $this;
     }
 
+    public function externalId($value)
+    {
+        $this->externalId = $value;
+
+        return $this;
+    }
+
     protected function beforePrepare(): bool
     {
         // join in the products table
@@ -62,6 +70,7 @@ class InvoiceElementsQuery extends ElementQuery
             'commerceinvoices_invoice.type',
             'commerceinvoices_invoice.sent',
             'commerceinvoices_invoice.invoiceId',
+            'commerceinvoices_invoice.externalId',
             'commerceinvoices_invoice.restock',
             'commerceinvoices_invoice.email',
             'commerceinvoices_invoice.invoiceNumber',
@@ -72,6 +81,10 @@ class InvoiceElementsQuery extends ElementQuery
 
         if ($this->orderId) {
             $this->subQuery->andWhere(Db::parseParam('commerceinvoices_invoice.orderId', $this->orderId));
+        }
+
+        if ($this->externalId) {
+            $this->subQuery->andWhere(Db::parseParam('commerceinvoices_invoice.externalId', $this->externalId));
         }
 
         if ($this->type) {
