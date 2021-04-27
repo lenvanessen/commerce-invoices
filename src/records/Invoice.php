@@ -22,9 +22,6 @@ use craft\db\ActiveRecord;
  */
 class Invoice extends ActiveRecord
 {
-    // Public Static Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -58,9 +58,9 @@ class InvoiceController extends Controller
             ]);
         }
 
-//        if($invoice->getEditable() === false) {
-//            throw new UnauthorizedHttpException('Trying to edit a non-editable invoice');
-//        }
+        if($invoice->getEditable() === false) {
+            throw new UnauthorizedHttpException('Trying to edit a non-editable invoice');
+        }
 
         if($request->getBodyParam('reset')) {
             CommerceInvoices::getInstance()->invoiceRows->createFromOrder($invoice->order(), $invoice);
@@ -83,7 +83,6 @@ class InvoiceController extends Controller
         $invoice->sent = (bool)$request->getBodyParam('send');
         $invoice->restock = (bool)$request->getBodyParam('restock');
         Craft::$app->getElements()->saveElement($invoice);
-
 
         if($invoice->sent && $invoice->restock) {
             foreach($invoice->rows as $row) {
