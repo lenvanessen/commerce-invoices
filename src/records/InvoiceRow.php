@@ -10,8 +10,6 @@
 
 namespace lenvanessen\commerce\invoices\records;
 
-use lenvanessen\commerce\invoices\CommerceInvoices;
-
 use Craft;
 use craft\db\ActiveRecord;
 
