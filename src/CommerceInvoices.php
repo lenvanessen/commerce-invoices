@@ -24,6 +24,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
 use craft\commerce\Plugin as Commerce;
 
+use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use lenvanessen\commerce\invoices\actions\CreateCreditInvoice;
@@ -69,7 +70,6 @@ class CommerceInvoices extends Plugin
 
     public function __construct($id, $parent = null, array $config = [])
     {
-        $this->_registerOrderActions();
         $this->_registerRoutes();
 
         parent::__construct($id, $parent, $config);
@@ -88,6 +88,22 @@ class CommerceInvoices extends Plugin
         $this->_attachPdfsToEmails();
         $this->_creatInvoiceOnOrderStatusChange();
         $this->_registerVariables();
+        $this->_injectOrderActions();
+    }
+
+    private function _injectOrderActions()
+    {
+        Craft::$app->view->hook('cp.commerce.order.edit.order-secondary-actions', function(array &$context) {
+            $order = $context['order'];
+            if(! $order->id || Invoice::find()->orderId($order->id)->type('credit')->exists() || ! $order->isCompleted) {
+                return '';
+            }
+
+            $html = '<style>#order-secondary-actions{display:flex;}</style>';
+            $html .= '<div class="spacer"></div><a href="'. UrlHelper::cpUrl('commerce-invoices/create?orderId='.$order->id).'&type=credit" type="button" class="btn submit">Credit invoice</a>';
+
+            return $html;
+        });
     }
 
     private function _attachPdfsToEmails()
@@ -96,6 +112,13 @@ class CommerceInvoices extends Plugin
             Emails::class,
             Emails::EVENT_BEFORE_SEND_MAIL,
             function(MailEvent $event) {
+
+                if(isset($event->orderData['invoiceId']) && $invoice = Invoice::findOne($event->orderData['invoiceId'])) {
+                    $this->emails->attachInvoiceToMail($event, $invoice);
+                    return;
+                }
+
+                // Or add them recursively
                 $invoices = Invoice::find()->orderId($event->order->id)->all();
 
                 foreach($invoices as $invoice) {
@@ -208,17 +231,6 @@ class CommerceInvoices extends Plugin
         ]);
     }
 
-    private function _registerOrderActions()
-    {
-        Event::on(
-            Order::class,
-            Element::EVENT_REGISTER_ACTIONS,
-            function (RegisterElementActionsEvent $event) {
-                $event->actions[] = CreateInvoice::class;
-                $event->actions[] = CreateCreditInvoice::class;
-            });
-    }
-
     private function _registerRoutes(): void
     {
         Event::on(
@@ -226,6 +238,7 @@ class CommerceInvoices extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['commerce-invoices/<invoiceId:\d+>'] = 'commerce-invoices/invoice/edit';
+                $event->rules['commerce-invoices/create'] = 'commerce-invoices/invoice/create';
             }
         );
 

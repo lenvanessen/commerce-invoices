@@ -13,6 +13,7 @@ use Craft;
 use craft\commerce\elements\Variant;
 use craft\commerce\models\LineItem;
 use craft\web\Controller;
+use craft\commerce\elements\Order;
 use lenvanessen\commerce\invoices\assetbundles\invoicescpsection\InvoicesCPSectionAsset;
 use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
@@ -95,6 +96,8 @@ class InvoiceController extends Controller
             }
         }
 
+        CommerceInvoices::getInstance()->emails->sendInvoiceEmails($invoice);
+
         Craft::$app->getSession()->setNotice(sprintf("Updated invoice %s", $invoice->invoiceNumber));
 
         return $this->redirectToPostedUrl();
@@ -129,6 +132,19 @@ class InvoiceController extends Controller
         return Craft::$app->getResponse()->sendContentAsFile($renderedPdf, $invoice->invoiceNumber . '.pdf', [
             'mimeType' => 'application/pdf'
         ]);
+    }
+
+    /**
+     *
+     */
+    public function actionCreate()
+    {
+        $orderId = $this->request->getParam('orderId');
+        $order = Order::findOne($orderId);
+
+        $invoice = CommerceInvoices::getInstance()->invoices->createFromOrder($order, $this->request->getParam('type'));
+
+        return $this->redirect($invoice->getCpEditUrl());
     }
 
     /**

@@ -48,4 +48,25 @@ class Emails
         $options = ['fileName' => $invoice->invoiceNumber . '.pdf', 'contentType' => 'application/pdf'];
         $event->craftEmail->attach($tempPath, $options);
     }
+
+    /**
+     * @param Invoice $invoice
+     * @throws \Throwable
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function sendInvoiceEmails(Invoice $invoice)
+    {
+        // If we have a e-mail for this specific order, send it
+        $mailSettingName = "{$invoice->type}EmailId";
+        $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
+        if($mailId !== 0 && $invoice->sent == true) {
+            $emailService = Commerce::getInstance()->getEmails();
+            $mail = $emailService->getEmailById((int)$mailId);
+
+            if($mail) {
+                $emailService->sendEmail($mail, $invoice->order(), null, ['invoiceId' => $invoice->id]);
+            }
+        }
+    }
 }

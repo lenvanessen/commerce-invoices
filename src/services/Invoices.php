@@ -24,7 +24,7 @@ use putyourlightson\logtofile\LogToFile;
  */
 class Invoices extends Component
 {
-    public function createFromOrder(Order $order, $type = 'invoice'): bool
+    public function createFromOrder(Order $order, $type = 'invoice')
     {
         if(! $order->isCompleted) {
             LogToFile::log(sprintf("Order %d was skipped, because it has not yet been completed", $order->id), 'commerce-invoices', 'error');
@@ -32,7 +32,7 @@ class Invoices extends Component
             return false;
         }
 
-        if(Invoice::find()->orderId($order->id)->type($type)->exists()) {
+        if($type == 'invoice' && Invoice::find()->orderId($order->id)->type($type)->exists()) {
             LogToFile::log(sprintf("Order %d was skipped, because an invoice already exists", $order->id), 'commerce-invoices', 'error');
 
             return false;
@@ -58,6 +58,12 @@ class Invoices extends Component
             return false;
         }
 
-        return CommerceInvoices::getInstance()->invoiceRows->createFromOrder($order, $invoice);
+        $saved = CommerceInvoices::getInstance()->invoiceRows->createFromOrder($order, $invoice);
+
+        if($saved && $type === 'invoice') {
+            CommerceInvoices::getInstance()->emails->sendInvoiceEmails($invoice);
+        }
+
+        return $invoice;
     }
 }
