@@ -95,18 +95,6 @@ class InvoiceController extends Controller
             }
         }
 
-        // If we have a e-mail for this specific order, send it
-        $mailSettingName = "{$invoice->type}EmailId";
-        $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
-        if($mailId !== 0 && $invoice->sent === true) {
-            $emailService = Commerce::getInstance()->getEmails();
-            $mail = $emailService->getEmailById((int)$mailId);
-
-            if($mail) {
-                $emailService->sendEmail($mail, $invoice->order(), null, ['invoiceId' => $invoice->id]);
-            }
-        }
-
         Craft::$app->getSession()->setNotice(sprintf("Updated invoice %s", $invoice->invoiceNumber));
 
         return $this->redirectToPostedUrl();

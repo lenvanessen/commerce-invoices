@@ -43,7 +43,7 @@
         disabled: true
     }) }}
 {% else %}
-    {% set emails = ['Do not send email'|t('commerce-invoices')]|merge(emails) %}
+{#    {% set emails = emails|merge({0:'Do not send email'|t('commerce-invoices')}) %}#}
 
     {{ forms.selectField({
         label: 'Invoice Email'|t('commerce-invoices'),

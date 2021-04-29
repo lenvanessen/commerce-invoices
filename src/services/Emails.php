@@ -15,7 +15,6 @@ use craft\helpers\Assets;
 use craft\commerce\Plugin as Commerce;
 use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
-use putyourlightson\logtofile\LogToFile;
 
 /**
 * @author    Len van Essen
@@ -30,31 +29,23 @@ class Emails
      * @param MailEvent $event
      * @return false
      */
-    public function attachInvoiceToMail(MailEvent $event)
+    public function attachInvoiceToMail(MailEvent $event, Invoice $invoice)
     {
-        try {
-            if(! $invoice = Invoice::findOne($event->orderData['invoiceId'])) {
-                return false;
-            }
+        $renderedPdf = Commerce::getInstance()->getPdfs()->renderPdfForOrder(
+            $event->order,
+            'email',
+            CommerceInvoices::getInstance()->getSettings()->pdfPath,
+            [
+                'invoice' => $invoice
+            ]
+        );
 
-            $renderedPdf = Commerce::getInstance()->getPdfs()->renderPdfForOrder(
-                $event->order,
-                'email',
-                CommerceInvoices::getInstance()->getSettings()->pdfPath,
-                [
-                    'invoice' => $invoice
-                ]
-            );
+        $tempPath = Assets::tempFilePath('pdf');
 
-            $tempPath = Assets::tempFilePath('pdf');
+        file_put_contents($tempPath, $renderedPdf);
 
-            file_put_contents($tempPath, $renderedPdf);
-
-            // Attachment information
-            $options = ['fileName' => $invoice->invoiceNumber . '.pdf', 'contentType' => 'application/pdf'];
-            $event->craftEmail->attach($tempPath, $options);
-        } catch (\Exception $e) {
-            LogToFile::error($e->getMessage(), 'commerce-invoices');
-        }
+        // Attachment information
+        $options = ['fileName' => $invoice->invoiceNumber . '.pdf', 'contentType' => 'application/pdf'];
+        $event->craftEmail->attach($tempPath, $options);
     }
 }

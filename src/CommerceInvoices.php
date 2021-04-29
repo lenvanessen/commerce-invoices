@@ -28,11 +28,14 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use lenvanessen\commerce\invoices\actions\CreateCreditInvoice;
 use lenvanessen\commerce\invoices\actions\CreateInvoice;
+use lenvanessen\commerce\invoices\elements\Invoice;
 use lenvanessen\commerce\invoices\models\Settings;
 use lenvanessen\commerce\invoices\services\InvoiceRows;
 use lenvanessen\commerce\invoices\services\Invoices;
+use lenvanessen\commerce\invoices\services\Emails as InternalMailService;
 use lenvanessen\commerce\invoices\variables\InvoiceVariable;
 use yii\base\Event;
+use yii\base\ModelEvent;
 
 /**
  * Class CommerceInvoices
@@ -64,6 +67,14 @@ class CommerceInvoices extends Plugin
      */
     public $hasCpSection = true;
 
+    public function __construct($id, $parent = null, array $config = [])
+    {
+        $this->_registerOrderActions();
+
+
+        parent::__construct($id, $parent, $config);
+    }
+
     /**
      * @inheritdoc
      */
@@ -72,11 +83,10 @@ class CommerceInvoices extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        $this->_registerOrderActions();
         $this->_registerComponents();
         $this->_registerRoutes();
-        $this->_creatInvoiceOnOrderStatusChange();
         $this->_attachPdfsToEmails();
+        $this->_creatInvoiceOnOrderStatusChange();
         $this->_registerVariables();
     }
 
@@ -86,8 +96,15 @@ class CommerceInvoices extends Plugin
             Emails::class,
             Emails::EVENT_BEFORE_SEND_MAIL,
             function(MailEvent $event) {
-                if(isset($event->orderData['invoiceId'])) {
-                    $this->emails->attachInvoiceToMail($event);
+                $invoices = Invoice::find()->orderId($event->order->id)->all();
+
+                foreach($invoices as $invoice) {
+                    $mailSettingName = "{$invoice->type}EmailId";
+                    $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
+
+                    if($mailId === $event->commerceEmail->id && $invoice->sent == true) {
+                        $this->emails->attachInvoiceToMail($event, $invoice);
+                    }
                 }
             }
         );
@@ -116,7 +133,7 @@ class CommerceInvoices extends Plugin
                 'class' => InvoiceRows::class
             ],
             'emails' => [
-                'class' => Emails::class
+                'class' => InternalMailService::class
             ]
         ]);
     }
