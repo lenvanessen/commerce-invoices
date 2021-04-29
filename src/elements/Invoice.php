@@ -181,7 +181,7 @@ class Invoice extends Element
 
     public function getPdfUrl()
     {
-        return UrlHelper::cpUrl('commerce-invoices/download/'.$this->uid);
+        return UrlHelper::siteUrl('/commerce-invoices/download/'.$this->uid);
     }
 
     /**

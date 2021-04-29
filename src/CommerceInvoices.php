@@ -70,7 +70,7 @@ class CommerceInvoices extends Plugin
     public function __construct($id, $parent = null, array $config = [])
     {
         $this->_registerOrderActions();
-
+        $this->_registerRoutes();
 
         parent::__construct($id, $parent, $config);
     }
@@ -226,7 +226,6 @@ class CommerceInvoices extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['commerce-invoices/<invoiceId:\d+>'] = 'commerce-invoices/invoice/edit';
-                $event->rules['commerce-invoices/download/<invoiceId:{uid}>'] = 'commerce-invoices/invoice/download';
             }
         );
 
@@ -234,6 +233,7 @@ class CommerceInvoices extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
+                $event->rules['commerce-invoices/download/<invoiceId:{uid}>'] = 'commerce-invoices/invoice/download';
                 if (getenv('ENVIRONMENT') !== 'production') {
                     $event->rules['commerce-invoices/style-pdf'] = 'commerce-invoices/invoice/test';
                 }
