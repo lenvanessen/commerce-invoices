@@ -24,6 +24,14 @@ class InvoiceElementsQuery extends ElementQuery
     public $dateCreated;
     public $type;
     public $externalId;
+    public $sent;
+
+    public function sent($value)
+    {
+        $this->sent = $value;
+
+        return $this;
+    }
 
     public function orderId($value)
     {
@@ -81,6 +89,10 @@ class InvoiceElementsQuery extends ElementQuery
 
         if ($this->orderId) {
             $this->subQuery->andWhere(Db::parseParam('commerceinvoices_invoice.orderId', $this->orderId));
+        }
+
+        if($this->sent) {
+            $this->subQuery->andWhere(Db::parseParam('commerceinvoices_invoice.sent', $this->sent));
         }
 
         if ($this->externalId) {

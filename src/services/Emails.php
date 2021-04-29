@@ -17,6 +17,11 @@ use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
 use putyourlightson\logtofile\LogToFile;
 
+/**
+* @author    Len van Essen
+* @package   CommerceInvoices
+* @since     1.0.0
+*/
 class Emails
 {
     /**

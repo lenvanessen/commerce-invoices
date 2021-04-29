@@ -15,10 +15,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\Plugin;
 use craft\commerce\elements\Order;
-use craft\commerce\events\EmailEvent;
 use craft\commerce\events\MailEvent;
 use craft\commerce\events\OrderStatusEvent;
-use craft\commerce\models\Pdf;
 use craft\commerce\services\Emails;
 use craft\commerce\services\OrderHistories;
 use craft\events\RegisterElementActionsEvent;
@@ -26,16 +24,14 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
 use craft\commerce\Plugin as Commerce;
 
-use craft\helpers\Assets;
+use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use lenvanessen\commerce\invoices\actions\CreateCreditInvoice;
 use lenvanessen\commerce\invoices\actions\CreateInvoice;
-use lenvanessen\commerce\invoices\elements\Invoice;
 use lenvanessen\commerce\invoices\models\Settings;
 use lenvanessen\commerce\invoices\services\InvoiceRows;
 use lenvanessen\commerce\invoices\services\Invoices;
-use modules\sitemodule\jobs\ExactOrderExport;
-use yii\base\BaseObject;
+use lenvanessen\commerce\invoices\variables\InvoiceVariable;
 use yii\base\Event;
 
 /**
@@ -81,6 +77,7 @@ class CommerceInvoices extends Plugin
         $this->_registerRoutes();
         $this->_creatInvoiceOnOrderStatusChange();
         $this->_attachPdfsToEmails();
+        $this->_registerVariables();
     }
 
     private function _attachPdfsToEmails()
@@ -92,6 +89,19 @@ class CommerceInvoices extends Plugin
                 if(isset($event->orderData['invoiceId'])) {
                     $this->emails->attachInvoiceToMail($event);
                 }
+            }
+        );
+    }
+
+    private function _registerVariables(): void
+    {
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function (Event $event) {
+                /** @var CraftVariable $variable */
+                $variable = $event->sender;
+                $variable->set('invoices', InvoiceVariable::class);
             }
         );
     }
