@@ -28,7 +28,7 @@
     label: "Auto create on status"|t,
     name: 'automaticallyCreateOrderStatusId',
     instructions: 'Should the invoice be automatically created when an order reaches a specific orderstatus?',
-    options: [{'option':0, 'label': 'Do not create automatically'|t('commerce-invoices')}]|merge(orderStatuses),
+    options: orderStatuses,
     value: settings['automaticallyCreateOrderStatusId'],
     class: 'auto-generate-order-status-id'
 }) }}
@@ -43,8 +43,6 @@
         disabled: true
     }) }}
 {% else %}
-{#    {% set emails = emails|merge({0:'Do not send email'|t('commerce-invoices')}) %}#}
-
     {{ forms.selectField({
         label: 'Invoice Email'|t('commerce-invoices'),
         instructions: 'Select the Commerce e-mail that should be sent upon creating a new invoice'|t('commerce'),
