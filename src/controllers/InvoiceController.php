@@ -111,12 +111,12 @@ class InvoiceController extends Controller
      */
     public function actionDownload($invoiceId)
     {
-        if(! $currentUserId = Craft::$app->getUser()->getIdentity()->getId()) {
+        if(! $currentUser = Craft::$app->getUser()->getIdentity()) {
             throw new UnauthorizedHttpException('Not allowed');
         }
 
         $invoice = Invoice::find()->uid($invoiceId)->one();
-        if($invoice->order()->user && $invoice->order()->user->id !== $currentUserId) {
+        if(!$currentUser->can('accessCp') && $invoice->order()->user && $invoice->order()->user->id !== $currentUser->id) {
             throw new UnauthorizedHttpException('Not allowed');
         }
 
