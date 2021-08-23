@@ -37,7 +37,7 @@ class Invoices extends Component
 
             return false;
         }
-
+        
         $invoice = new Invoice;
         $invoice->orderId = $order->id;
 
@@ -59,6 +59,7 @@ class Invoices extends Component
         }
 
         $saved = CommerceInvoices::getInstance()->invoiceRows->createFromOrder($order, $invoice);
+
 
         if($saved && $type === 'invoice') {
             CommerceInvoices::getInstance()->emails->sendInvoiceEmails($invoice);

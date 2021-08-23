@@ -164,4 +164,17 @@ class InvoiceController extends Controller
             ['invoice' => Invoice::findOne($invoiceId)]
         );
     }
+
+    public function actionSend()
+    {
+
+        if(! Craft::$app->getUser()->getIdentity()->can('accessCp')) {
+            throw new UnauthorizedHttpException('Not allowed');
+        }
+
+        $orderId = Craft::$app->getRequest()->get('orderId');
+        $order = Order::find()->id($orderId)->one();
+        
+        CommerceInvoices::getInstance()->invoices->createFromorder($order);
+    }
 }

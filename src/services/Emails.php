@@ -15,6 +15,7 @@ use craft\helpers\Assets;
 use craft\commerce\Plugin as Commerce;
 use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
+use putyourlightson\logtofile\LogToFile;
 
 /**
 * @author    Len van Essen
@@ -60,11 +61,15 @@ class Emails
         // If we have a e-mail for this specific order, send it
         $mailSettingName = "{$invoice->type}EmailId";
         $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
+
+        LogToFile::log(sprintf("Sending emails for invoice %d", $invoice->id), 'commerce-invoices');
         if($mailId !== 0 && $invoice->sent == true) {
             $emailService = Commerce::getInstance()->getEmails();
             $mail = $emailService->getEmailById((int)$mailId);
 
+            LogToFile::log(sprintf("send conditions passed %d", $invoice->id), 'commerce-invoices');
             if($mail) {
+                LogToFile::log(sprintf("triggering emailservice to send mail for invoice %d", $invoice->id), 'commerce-invoices');
                 $emailService->sendEmail($mail, $invoice->order(), null, ['invoiceId' => $invoice->id]);
             }
         }

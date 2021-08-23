@@ -249,6 +249,7 @@ class CommerceInvoices extends Plugin
                 $event->rules['commerce-invoices/download/<invoiceId:{uid}>'] = 'commerce-invoices/invoice/download';
                 if (getenv('ENVIRONMENT') !== 'production') {
                     $event->rules['commerce-invoices/style-pdf'] = 'commerce-invoices/invoice/test';
+                    $event->rules['test-send'] = 'commerce-invoices/invoice/send';
                 }
             }
         );
