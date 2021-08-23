@@ -181,7 +181,7 @@ class Invoice extends Element
 
     public function getPdfUrl()
     {
-        return UrlHelper::cpUrl('commerce-invoices/download/'.$this->uid);
+        return UrlHelper::siteUrl('/commerce-invoices/download/'.$this->uid);
     }
 
     /**
@@ -226,8 +226,8 @@ class Invoice extends Element
      */
     public function subTotal() : float
     {
-        return $this->_rows
-            ? array_reduce($this->_rows, fn($amount, $current) => $amount += $current->subTotal())
+        return $this->getRows()
+            ? array_reduce($this->getRows(), fn($amount, $current) => $amount += $current->subTotal())
             : 0;
     }
 
@@ -236,8 +236,8 @@ class Invoice extends Element
      */
     public function totalTax() : float
     {
-        return $this->_rows
-            ? array_reduce($this->_rows, fn($amount, $current) => $amount += $current->subTotalTax())
+        return $this->getRows()
+            ? array_reduce($this->getRows(), fn($amount, $current) => $amount += $current->subTotalTax())
             : 0;
     }
 

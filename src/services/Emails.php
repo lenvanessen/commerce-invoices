@@ -30,31 +30,48 @@ class Emails
      * @param MailEvent $event
      * @return false
      */
-    public function attachInvoiceToMail(MailEvent $event)
+    public function attachInvoiceToMail(MailEvent $event, Invoice $invoice)
     {
-        try {
-            if(! $invoice = Invoice::findOne($event->orderData['invoiceId'])) {
-                return false;
+        $renderedPdf = Commerce::getInstance()->getPdfs()->renderPdfForOrder(
+            $event->order,
+            'email',
+            CommerceInvoices::getInstance()->getSettings()->pdfPath,
+            [
+                'invoice' => $invoice
+            ]
+        );
+
+        $tempPath = Assets::tempFilePath('pdf');
+
+        file_put_contents($tempPath, $renderedPdf);
+
+        // Attachment information
+        $options = ['fileName' => $invoice->invoiceNumber . '.pdf', 'contentType' => 'application/pdf'];
+        $event->craftEmail->attach($tempPath, $options);
+    }
+
+    /**
+     * @param Invoice $invoice
+     * @throws \Throwable
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function sendInvoiceEmails(Invoice $invoice)
+    {
+        // If we have a e-mail for this specific order, send it
+        $mailSettingName = "{$invoice->type}EmailId";
+        $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
+
+        LogToFile::log(sprintf("Sending emails for invoice %d", $invoice->id), 'commerce-invoices');
+        if($mailId !== 0 && $invoice->sent == true) {
+            $emailService = Commerce::getInstance()->getEmails();
+            $mail = $emailService->getEmailById((int)$mailId);
+
+            LogToFile::log(sprintf("send conditions passed %d", $invoice->id), 'commerce-invoices');
+            if($mail) {
+                LogToFile::log(sprintf("triggering emailservice to send mail for invoice %d", $invoice->id), 'commerce-invoices');
+                $emailService->sendEmail($mail, $invoice->order(), null, ['invoiceId' => $invoice->id]);
             }
-
-            $renderedPdf = Commerce::getInstance()->getPdfs()->renderPdfForOrder(
-                $event->order,
-                'email',
-                CommerceInvoices::getInstance()->getSettings()->pdfPath,
-                [
-                    'invoice' => $invoice
-                ]
-            );
-
-            $tempPath = Assets::tempFilePath('pdf');
-
-            file_put_contents($tempPath, $renderedPdf);
-
-            // Attachment information
-            $options = ['fileName' => $invoice->invoiceNumber . '.pdf', 'contentType' => 'application/pdf'];
-            $event->craftEmail->attach($tempPath, $options);
-        } catch (\Exception $e) {
-            LogToFile::error($e->getMessage(), 'commerce-invoices');
         }
     }
 }

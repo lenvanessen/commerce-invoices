@@ -24,15 +24,19 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
 use craft\commerce\Plugin as Commerce;
 
+use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use lenvanessen\commerce\invoices\actions\CreateCreditInvoice;
 use lenvanessen\commerce\invoices\actions\CreateInvoice;
+use lenvanessen\commerce\invoices\elements\Invoice;
 use lenvanessen\commerce\invoices\models\Settings;
 use lenvanessen\commerce\invoices\services\InvoiceRows;
 use lenvanessen\commerce\invoices\services\Invoices;
+use lenvanessen\commerce\invoices\services\Emails as InternalMailService;
 use lenvanessen\commerce\invoices\variables\InvoiceVariable;
 use yii\base\Event;
+use yii\base\ModelEvent;
 
 /**
  * Class CommerceInvoices
@@ -64,6 +68,13 @@ class CommerceInvoices extends Plugin
      */
     public $hasCpSection = true;
 
+    public function __construct($id, $parent = null, array $config = [])
+    {
+        $this->_registerRoutes();
+
+        parent::__construct($id, $parent, $config);
+    }
+
     /**
      * @inheritdoc
      */
@@ -72,12 +83,27 @@ class CommerceInvoices extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        $this->_registerOrderActions();
         $this->_registerComponents();
         $this->_registerRoutes();
-        $this->_creatInvoiceOnOrderStatusChange();
         $this->_attachPdfsToEmails();
+        $this->_creatInvoiceOnOrderStatusChange();
         $this->_registerVariables();
+        $this->_injectOrderActions();
+    }
+
+    private function _injectOrderActions()
+    {
+        Craft::$app->view->hook('cp.commerce.order.edit.order-secondary-actions', function(array &$context) {
+            $order = $context['order'];
+            if(! $order->id || Invoice::find()->orderId($order->id)->type('credit')->exists() || ! $order->isCompleted) {
+                return '';
+            }
+
+            $html = '<style>#order-secondary-actions{display:flex;}</style>';
+            $html .= '<div class="spacer"></div><a href="'. UrlHelper::cpUrl('commerce-invoices/create?orderId='.$order->id).'&type=credit" type="button" class="btn submit">Credit invoice</a>';
+
+            return $html;
+        });
     }
 
     private function _attachPdfsToEmails()
@@ -86,8 +112,22 @@ class CommerceInvoices extends Plugin
             Emails::class,
             Emails::EVENT_BEFORE_SEND_MAIL,
             function(MailEvent $event) {
-                if(isset($event->orderData['invoiceId'])) {
-                    $this->emails->attachInvoiceToMail($event);
+
+                if(isset($event->orderData['invoiceId']) && $invoice = Invoice::findOne($event->orderData['invoiceId'])) {
+                    $this->emails->attachInvoiceToMail($event, $invoice);
+                    return;
+                }
+
+                // Or add them recursively
+                $invoices = Invoice::find()->orderId($event->order->id)->all();
+
+                foreach($invoices as $invoice) {
+                    $mailSettingName = "{$invoice->type}EmailId";
+                    $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
+
+                    if($mailId === $event->commerceEmail->id && $invoice->sent == true) {
+                        $this->emails->attachInvoiceToMail($event, $invoice);
+                    }
                 }
             }
         );
@@ -116,7 +156,7 @@ class CommerceInvoices extends Plugin
                 'class' => InvoiceRows::class
             ],
             'emails' => [
-                'class' => Emails::class
+                'class' => InternalMailService::class
             ]
         ]);
     }
@@ -191,17 +231,6 @@ class CommerceInvoices extends Plugin
         ]);
     }
 
-    private function _registerOrderActions()
-    {
-        Event::on(
-            Order::class,
-            Element::EVENT_REGISTER_ACTIONS,
-            function (RegisterElementActionsEvent $event) {
-                $event->actions[] = CreateInvoice::class;
-                $event->actions[] = CreateCreditInvoice::class;
-            });
-    }
-
     private function _registerRoutes(): void
     {
         Event::on(
@@ -209,7 +238,7 @@ class CommerceInvoices extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['commerce-invoices/<invoiceId:\d+>'] = 'commerce-invoices/invoice/edit';
-                $event->rules['commerce-invoices/download/<invoiceId:{uid}>'] = 'commerce-invoices/invoice/download';
+                $event->rules['commerce-invoices/create'] = 'commerce-invoices/invoice/create';
             }
         );
 
@@ -217,8 +246,10 @@ class CommerceInvoices extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
+                $event->rules['commerce-invoices/download/<invoiceId:{uid}>'] = 'commerce-invoices/invoice/download';
                 if (getenv('ENVIRONMENT') !== 'production') {
                     $event->rules['commerce-invoices/style-pdf'] = 'commerce-invoices/invoice/test';
+                    $event->rules['test-send'] = 'commerce-invoices/invoice/send';
                 }
             }
         );

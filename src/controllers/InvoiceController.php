@@ -13,6 +13,7 @@ use Craft;
 use craft\commerce\elements\Variant;
 use craft\commerce\models\LineItem;
 use craft\web\Controller;
+use craft\commerce\elements\Order;
 use lenvanessen\commerce\invoices\assetbundles\invoicescpsection\InvoicesCPSectionAsset;
 use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
@@ -95,17 +96,7 @@ class InvoiceController extends Controller
             }
         }
 
-        // If we have a e-mail for this specific order, send it
-        $mailSettingName = "{$invoice->type}EmailId";
-        $mailId = CommerceInvoices::getInstance()->getSettings()->{$mailSettingName};
-        if($mailId !== 0 && $invoice->sent === true) {
-            $emailService = Commerce::getInstance()->getEmails();
-            $mail = $emailService->getEmailById((int)$mailId);
-
-            if($mail) {
-                $emailService->sendEmail($mail, $invoice->order(), null, ['invoiceId' => $invoice->id]);
-            }
-        }
+        CommerceInvoices::getInstance()->emails->sendInvoiceEmails($invoice);
 
         Craft::$app->getSession()->setNotice(sprintf("Updated invoice %s", $invoice->invoiceNumber));
 
@@ -120,11 +111,14 @@ class InvoiceController extends Controller
      */
     public function actionDownload($invoiceId)
     {
-        if(! Craft::$app->getUser()->getIdentity()->can('accessCp')) {
+        if(! $currentUser = Craft::$app->getUser()->getIdentity()) {
             throw new UnauthorizedHttpException('Not allowed');
         }
 
         $invoice = Invoice::find()->uid($invoiceId)->one();
+        if(!$currentUser->can('accessCp') && $invoice->order()->user && $invoice->order()->user->id !== $currentUser->id) {
+            throw new UnauthorizedHttpException('Not allowed');
+        }
 
         $renderedPdf = Commerce::getInstance()->getPdfs()->renderPdfForOrder(
             $invoice->order(),
@@ -138,6 +132,19 @@ class InvoiceController extends Controller
         return Craft::$app->getResponse()->sendContentAsFile($renderedPdf, $invoice->invoiceNumber . '.pdf', [
             'mimeType' => 'application/pdf'
         ]);
+    }
+
+    /**
+     *
+     */
+    public function actionCreate()
+    {
+        $orderId = $this->request->getParam('orderId');
+        $order = Order::findOne($orderId);
+
+        $invoice = CommerceInvoices::getInstance()->invoices->createFromOrder($order, $this->request->getParam('type'));
+
+        return $this->redirect($invoice->getCpEditUrl());
     }
 
     /**
@@ -156,5 +163,18 @@ class InvoiceController extends Controller
             CommerceInvoices::getInstance()->getSettings()->pdfPath,
             ['invoice' => Invoice::findOne($invoiceId)]
         );
+    }
+
+    public function actionSend()
+    {
+
+        if(! Craft::$app->getUser()->getIdentity()->can('accessCp')) {
+            throw new UnauthorizedHttpException('Not allowed');
+        }
+
+        $orderId = Craft::$app->getRequest()->get('orderId');
+        $order = Order::find()->id($orderId)->one();
+        
+        CommerceInvoices::getInstance()->invoices->createFromorder($order);
     }
 }
