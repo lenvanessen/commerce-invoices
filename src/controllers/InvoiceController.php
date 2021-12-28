@@ -18,6 +18,7 @@ use lenvanessen\commerce\invoices\assetbundles\invoicescpsection\InvoicesCPSecti
 use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
 use lenvanessen\commerce\invoices\helpers\Stock;
+use lenvanessen\commerce\invoices\models\FakePdf;
 use lenvanessen\commerce\invoices\records\InvoiceRow;
 use craft\commerce\Plugin as Commerce;
 use yii\web\UnauthorizedHttpException;
@@ -126,7 +127,8 @@ class InvoiceController extends Controller
             CommerceInvoices::getInstance()->getSettings()->pdfPath,
             [
                 'invoice' => $invoice
-            ]
+            ],
+            new FakePdf()
         );
 
         return Craft::$app->getResponse()->sendContentAsFile($renderedPdf, $invoice->invoiceNumber . '.pdf', [

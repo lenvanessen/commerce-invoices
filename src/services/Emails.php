@@ -15,6 +15,7 @@ use craft\helpers\Assets;
 use craft\commerce\Plugin as Commerce;
 use lenvanessen\commerce\invoices\CommerceInvoices;
 use lenvanessen\commerce\invoices\elements\Invoice;
+use lenvanessen\commerce\invoices\models\FakePdf;
 use putyourlightson\logtofile\LogToFile;
 
 /**
@@ -38,7 +39,8 @@ class Emails
             CommerceInvoices::getInstance()->getSettings()->pdfPath,
             [
                 'invoice' => $invoice
-            ]
+            ],
+            new FakePdf()
         );
 
         $tempPath = Assets::tempFilePath('pdf');
