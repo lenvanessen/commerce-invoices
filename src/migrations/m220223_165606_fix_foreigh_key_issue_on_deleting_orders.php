@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\contentmigrations;
+namespace lenvanessen\commerce\invoices\migrations;
 
 use craft\commerce\db\Table as CommerceTable;
 use craft\db\Migration;
@@ -19,6 +19,8 @@ class m220223_165606_fix_foreigh_key_issue_on_deleting_orders extends Migration
     {
         MigrationHelper::dropForeignKeyIfExists(Table::INVOICES, ['orderId'], $this);
         $this->addForeignKey(null, Table::INVOICES, 'orderId', CommerceTable::ORDERS, 'id', 'CASCADE');
+
+        return true;
         // Place migration code here...
     }
 
