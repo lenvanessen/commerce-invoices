@@ -42,6 +42,7 @@
         "developerUrl": "wndr.digital",
         "documentationUrl": "https://github.com/lenvanessen/commerce-invoices/blob/master/README.md",
         "changelogUrl": "https://raw.githubusercontent.com/lenvanessen/commerce-invoices/master/CHANGELOG.md",
-        "class": "lenvanessen\\commerce\\invoices\\CommerceInvoices"
+        "class": "lenvanessen\\commerce\\invoices\\CommerceInvoices",
+        "schemaVersion": "1.0.2"
     }
 }
