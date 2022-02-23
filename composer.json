@@ -2,7 +2,7 @@
     "name": "lenvanessen/commerce-invoices",
     "description": "A pdf of an orders does not equal an invoice, invoices should be: Immutable, sequentialy numbered. Commerce Invoices allows you to create moment-in-time snapshots of a order to create a invoice or credit invoice",
     "type": "craft-plugin",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "keywords": [
         "craft",
         "cms",
