@@ -1,6 +1,6 @@
 # Commerce Invoices plugin for Craft CMS 3.x
 
-Craft Commerce is great! Their PDF system is pretty awesome to. However, pdf of a does not equal an invoice, invoices should be: Immutable and sequentially numbered.
+Craft Commerce is great! Their PDF system is pretty awesome to. However, pdf of an order does not equal an invoice, invoices should be: Immutable and sequentially numbered.
 
 Commerce Invoices is an extension for Craft Commerce that allows you to:
 - Create PDF invoices for orders (automatically if they reach a certain status, or manually)
