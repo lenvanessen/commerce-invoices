@@ -36,32 +36,28 @@
 {% endblock %}
 
 {% block details %}
-    <div class="details-container">
-        <div class="details">
-            <div class="order-meta-container">
-                <div class="order-meta meta read-only">
-                    <div class="data">
-                        <h5 class="heading">{{ invoice.type|capitalize ~ ' number'|t('commerce-invoices') }}</h5>
-                        <p class="value">{{ invoice.invoiceNumber }}</p>
-                    </div>
-                    {% if invoice.orderId %}
-                    <div class="data">
-                        <h5 class="heading">{{ 'Order'|t('commerce-invoices') }}</h5>
-                        <p class="value"><a href="{{ invoice.order.getCpEditUrl() }}">{{ invoice.orderId }}</a></p>
-                    </div>
-                    {% endif %}
-                    <div class="data">
-                        <h5 class="heading">{{ 'Invoice date'|t('commerce-invoices') }}</h5>
-                        <p class="value">{{ invoice.dateCreated|date }}</p>
-                    </div>
-                    <div class="data">
-                        <h5 class="heading">{{ 'PDF'|t('commerce-invoices') }}</h5>
-                        <p class="value"><a href="{{ invoice.getPdfUrl() }}">{{ 'Download PDF'|t }}</a></p>
-                    </div>
+        <div class="order-meta-container" style="margin-bottom: 15px" >
+            <div class="order-meta meta read-only">
+                <div class="data">
+                    <h5 class="heading">{{ invoice.type|capitalize ~ ' number'|t('commerce-invoices') }}</h5>
+                    <p class="value">{{ invoice.invoiceNumber }}</p>
+                </div>
+                {% if invoice.orderId %}
+                <div class="data">
+                    <h5 class="heading">{{ 'Order'|t('commerce-invoices') }}</h5>
+                    <p class="value"><a href="{{ invoice.order.getCpEditUrl() }}">{{ invoice.orderId }}</a></p>
+                </div>
+                {% endif %}
+                <div class="data">
+                    <h5 class="heading">{{ 'Invoice date'|t('commerce-invoices') }}</h5>
+                    <p class="value">{{ invoice.dateCreated|date }}</p>
+                </div>
+                <div class="data">
+                    <h5 class="heading">{{ 'PDF'|t('commerce-invoices') }}</h5>
+                    <p class="value"><a href="{{ invoice.getPdfUrl() }}">{{ 'Download PDF'|t }}</a></p>
                 </div>
             </div>
         </div>
-    </div>
 
     {% if invoice.isCredit %}
     <div class="details-container">
@@ -94,7 +90,7 @@
         <div class="flex-col flex-grow">
             <strong>{{ 'Billing address'|t('commerce-invoices') }}</strong>
             <br>
-            {% for key in fields if key in invoice.billingAddress.addressLines|keys %}
+            {% for key in fields|filter(k => k in invoice.billingAddress.addressLines|keys) %}
                 <br>
                 {% if key in strong %}<strong>{% endif %}
                     {{ invoice.billingAddress.addressLines[key] }}
@@ -104,7 +100,7 @@
         <div class="flex-col flex-grow border-left pl-4">
             <strong>{{ 'Shipping address'|t('commerce-invoices') }}</strong>
             <br>
-            {% for key in fields if key in invoice.shippingAddress.addressLines|keys %}
+            {% for key in fields|filter(k => k in invoice.shippingAddress.addressLines|keys)%}
                 <br>
                 {% if key in strong %}<strong>{% endif %}
                 {{ invoice.billingAddress.addressLines[key] }}

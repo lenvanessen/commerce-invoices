@@ -13,6 +13,7 @@ use Craft;
 use craft\base\Element;
 use craft\commerce\models\LineItem;
 use craft\commerce\Plugin;
+use craft\elements\User;
 use craft\helpers\Json;
 use craft\helpers\Template;
 use craft\elements\Asset;
@@ -307,6 +308,7 @@ class Invoice extends Element
 
     protected function tableAttributeHtml(string $attribute): string
     {
+
         switch ($attribute) {
             case 'orderId':
                 $order = Order::find()
@@ -371,9 +373,9 @@ class Invoice extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    public function canView(User $user): bool
     {
-        return false;
+        return true;
     }
 
     public function getCpEditUrl(): ?string
