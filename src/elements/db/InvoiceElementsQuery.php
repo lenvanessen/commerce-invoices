@@ -21,7 +21,7 @@ class InvoiceElementsQuery extends ElementQuery
 {
     public $orderId;
     public $invoiceNumber;
-    public $dateCreated;
+    public mixed $dateCreated;
     public $type;
     public $externalId;
     public $sent;
@@ -54,7 +54,7 @@ class InvoiceElementsQuery extends ElementQuery
         return $this;
     }
 
-    public function dateCreated($value)
+    public function dateCreated(mixed $value): \craft\elements\db\ElementQuery
     {
         $this->dateCreated = $value;
 

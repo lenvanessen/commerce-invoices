@@ -344,7 +344,7 @@ class Invoice extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         $rules = [];
 
@@ -376,7 +376,7 @@ class Invoice extends Element
         return false;
     }
 
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
         return 'commerce-invoices/'.$this->id;
     }
@@ -384,7 +384,7 @@ class Invoice extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?\craft\models\FieldLayout
     {
         return Craft::$app->fields->getLayoutByType(Invoice::class);
     }
@@ -424,7 +424,7 @@ class Invoice extends Element
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
             $record = InvoiceRecord::findOne($this->id);
@@ -466,7 +466,7 @@ class Invoice extends Element
     /**
      * @inheritdoc
      */
-    public function afterDelete()
+    public function afterDelete(): void
     {
     }
 
@@ -481,7 +481,7 @@ class Invoice extends Element
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure(int $structureId)
+    public function afterMoveInStructure(int $structureId): void
     {
     }
 }
