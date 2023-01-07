@@ -85,26 +85,30 @@
 {% block content %}
     <div class="flex">
         {# Make a logical field order #}
-        {% set fields = ['businessName', 'businessTaxId', 'name', 'phone', 'address1', 'address2', 'address3', 'zipCode', 'city', 'countryText'] %}
-        {% set strong = ['businessName'] %}
+        {% set fields = ['organization', 'organizationTaxId', 'fullName', 'addressPhone', 'addressLine1', 'houseNumber', 'addressLine2', 'postalCode', 'locality', 'countryCode'] %}
+        {% set strong = ['organization'] %}
         <div class="flex-col flex-grow">
             <strong>{{ 'Billing address'|t('commerce-invoices') }}</strong>
             <br>
-            {% for key in fields|filter(k => k in invoice.billingAddress.addressLines|keys) %}
-                <br>
+            {% for key in fields %}
+                {% if invoice.order.billingAddress[key] is not empty %}
+                    <br>
                 {% if key in strong %}<strong>{% endif %}
-                    {{ invoice.billingAddress.addressLines[key] }}
+                    {{ invoice.order.billingAddress[key] }}
                 {% if key in strong %}</strong>{% endif %}
+                {% endif %}
             {% endfor %}
         </div>
         <div class="flex-col flex-grow border-left pl-4">
             <strong>{{ 'Shipping address'|t('commerce-invoices') }}</strong>
             <br>
-            {% for key in fields|filter(k => k in invoice.shippingAddress.addressLines|keys)%}
-                <br>
-                {% if key in strong %}<strong>{% endif %}
-                {{ invoice.billingAddress.addressLines[key] }}
-                {% if key in strong %}</strong>{% endif %}
+            {% for key in fields %}
+                {% if invoice.order.shippingAddress[key] is not empty %}
+                    <br>
+                    {% if key in strong %}<strong>{% endif %}
+                    {{ invoice.order.shippingAddress[key] }}
+                    {% if key in strong %}</strong>{% endif %}
+                {% endif %}
             {% endfor %}
         </div>
     </div>
