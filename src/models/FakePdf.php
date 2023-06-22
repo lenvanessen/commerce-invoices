@@ -16,6 +16,9 @@ class FakePdf extends Pdf
 
     public function getRenderLanguage(Order $order = null): string
     {
+        if($order) {
+            return $order->orderSite->language;
+        }
         return \Craft::$app->getSites()->getPrimarySite()->language;
     }
 }
