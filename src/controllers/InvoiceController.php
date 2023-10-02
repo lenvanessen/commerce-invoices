@@ -12,6 +12,7 @@ namespace lenvanessen\commerce\invoices\controllers;
 use Craft;
 use craft\commerce\elements\Variant;
 use craft\commerce\models\LineItem;
+use craft\commerce\Plugin;
 use craft\web\Controller;
 use craft\commerce\elements\Order;
 use lenvanessen\commerce\invoices\assetbundles\invoicescpsection\InvoicesCPSectionAsset;
@@ -97,6 +98,12 @@ class InvoiceController extends Controller
             }
         }
 
+        if($invoice->sent && $invoice->type === 'credit') {
+            $order = $invoice->order();
+            $order->orderStatusId = Plugin::getInstance()->orderStatuses->getOrderStatusByHandle('refunded')->id;
+            Craft::$app->getElements()->saveElement($order);
+        }
+
         CommerceInvoices::getInstance()->emails->sendInvoiceEmails($invoice);
 
         Craft::$app->getSession()->setNotice(sprintf("Updated invoice %s", $invoice->invoiceNumber));
@@ -176,7 +183,7 @@ class InvoiceController extends Controller
 
         $orderId = Craft::$app->getRequest()->get('orderId');
         $order = Order::find()->id($orderId)->one();
-        
+
         CommerceInvoices::getInstance()->invoices->createFromorder($order);
     }
 }
