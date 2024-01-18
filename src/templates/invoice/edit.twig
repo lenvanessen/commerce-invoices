@@ -23,7 +23,7 @@
             shortcut: true,
             retainScroll: true,
         }
-        ]
+    ]
     %}
 {% endif %}
 
@@ -36,49 +36,49 @@
 {% endblock %}
 
 {% block details %}
-        <div class="order-meta-container" style="margin-bottom: 15px" >
-            <div class="order-meta meta read-only">
-                <div class="data">
-                    <h5 class="heading">{{ invoice.type|capitalize ~ ' number'|t('commerce-invoices') }}</h5>
-                    <p class="value">{{ invoice.invoiceNumber }}</p>
-                </div>
-                {% if invoice.orderId %}
+    <div class="order-meta-container" style="margin-bottom: 15px" >
+        <div class="order-meta meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ invoice.type|capitalize ~ ' number'|t('commerce-invoices') }}</h5>
+                <p class="value">{{ invoice.invoiceNumber }}</p>
+            </div>
+            {% if invoice.orderId %}
                 <div class="data">
                     <h5 class="heading">{{ 'Order'|t('commerce-invoices') }}</h5>
                     <p class="value"><a href="{{ invoice.order.getCpEditUrl() }}">{{ invoice.orderId }}</a></p>
                 </div>
-                {% endif %}
-                <div class="data">
-                    <h5 class="heading">{{ 'Invoice date'|t('commerce-invoices') }}</h5>
-                    <p class="value">{{ invoice.dateCreated|date }}</p>
-                </div>
-                <div class="data">
-                    <h5 class="heading">{{ 'PDF'|t('commerce-invoices') }}</h5>
-                    <p class="value"><a href="{{ invoice.getPdfUrl() }}">{{ 'Download PDF'|t }}</a></p>
-                </div>
+            {% endif %}
+            <div class="data">
+                <h5 class="heading">{{ 'Invoice date'|t('commerce-invoices') }}</h5>
+                <p class="value">{{ invoice.dateCreated|date }}</p>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ 'PDF'|t('commerce-invoices') }}</h5>
+                <p class="value"><a href="{{ invoice.getPdfUrl() }}">{{ 'Download PDF'|t }}</a></p>
             </div>
         </div>
+    </div>
 
     {% if invoice.isCredit %}
-    <div class="details-container">
-        <div class="details">
-            <div class="order-meta-container">
-                <div class="order-meta meta read-only">
-                    <div class="data">
-                        {{ forms.lightswitchField({
-                            label: 'Re-stock?'|t('commerce-invoices'),
-                            id: 'restock',
-                            name: 'restock',
-                            on: invoice.restock,
-                            disabled:not invoice.editable,
-                            value: 1,
-                            instructions: 'Check if the items should be re-stocked'|t('commerce-invoices')
-                        }) }}
+        <div class="details-container">
+            <div class="details">
+                <div class="order-meta-container">
+                    <div class="order-meta meta read-only">
+                        <div class="data">
+                            {{ forms.lightswitchField({
+                                label: 'Re-stock?'|t('commerce-invoices'),
+                                id: 'restock',
+                                name: 'restock',
+                                on: invoice.restock,
+                                disabled:not invoice.editable,
+                                value: 1,
+                                instructions: 'Check if the items should be re-stocked'|t('commerce-invoices')
+                            }) }}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
     {% endif %}
 {% endblock %}
 
@@ -93,9 +93,9 @@
             {% for key in fields %}
                 {% if invoice.order.billingAddress[key] is not empty %}
                     <br>
-                {% if key in strong %}<strong>{% endif %}
+                    {% if key in strong %}<strong>{% endif %}
                     {{ invoice.order.billingAddress[key] }}
-                {% if key in strong %}</strong>{% endif %}
+                    {% if key in strong %}</strong>{% endif %}
                 {% endif %}
             {% endfor %}
         </div>
@@ -116,16 +116,16 @@
 
     <table>
         <thead>
-            <th>{{ 'Qty'|t }}</th>
-            <th>{{ 'Description'|t }}</th>
-            <th>{{ 'VAT'|t }}</th>
-            <th>{{ 'Price'|t }}</th>
-            <th>{{ 'Subtotal'|t }}</th>
+        <th>{{ 'Qty'|t }}</th>
+        <th>{{ 'Description'|t }}</th>
+        <th>{{ 'VAT'|t }}</th>
+        <th>{{ 'Price'|t }}</th>
+        <th>{{ 'Subtotal'|t }}</th>
         </thead>
         <tbody>
-            {% for row in invoice.rows %}
-                <tr>
-                    {% if invoice.editable %}
+        {% for row in invoice.rows %}
+            <tr>
+                {% if invoice.editable %}
                     <td>
                         {{ commerceForms.numberField({
                             id: 'qty',
@@ -135,32 +135,32 @@
                             step: 'any',
                         }) }}
                     </td>
-                    {% else %}
+                {% else %}
                     <td>{{ row.qty }}</td>
-                    {% endif %}
-                    <td>{{ row.description }}</td>
-                    <td>{{ row.tax|commerceCurrency }}</td>
-                    <td>{{ row.price|commerceCurrency }}</td>
-                    <td>{{ row.subtotal }}</td>
-                </tr>
-            {% endfor %}
+                {% endif %}
+                <td>{{ row.description }}</td>
+                <td>{{ invoice.order.convertCurrency(row.tax) }}</td>
+                <td>{{ invoice.order.convertCurrency(row.price) }}</td>
+                <td>{{ invoice.order.convertCurrency(row.subtotal) }}</td>
+            </tr>
+        {% endfor %}
         </tbody>
         <tfoot>
-            <tr>
-                <td></td>
-                <td colspan="2" class="text-right"><strong>{{ 'Subtotal'|t }}</strong></td>
-                <td>{{ invoice.subTotal|commerceCurrency }}</td>
-            </tr>
-            <tr>
-                <td></td>
-                <td colspan="2" class="text-right"><strong>{{ 'VAT'|t }}</strong></td>
-                <td>{{ invoice.totalTax|commerceCurrency }}</td>
-            </tr>
-            <tr>
-                <td></td>
-                <td colspan="2" class="text-right"><strong>{{ 'Total'|t }}</strong></td>
-                <td>{{ invoice.total|commerceCurrency }}</td>
-            </tr>
+        <tr>
+            <td></td>
+            <td colspan="2" class="text-right"><strong>{{ 'Subtotal'|t }}</strong></td>
+            <td>{{ invoice.order.convertCurrency(invoice.subTotal) }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td colspan="2" class="text-right"><strong>{{ 'VAT'|t }}</strong></td>
+            <td>{{ invoice.order.convertCurrency(invoice.totalTax)}}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td colspan="2" class="text-right"><strong>{{ 'Total'|t }}</strong></td>
+            <td>{{ invoice.order.convertCurrency(invoice.total)}}</td>
+        </tr>
         </tfoot>
     </table>
 {% endblock %}
